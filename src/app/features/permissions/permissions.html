@@ -1,0 +1,187 @@
+<mat-sidenav-container class="permissions-container">
+  <mat-sidenav mode="side" opened class="projects-sidebar">
+    <div class="sidebar-header">
+      <h3>Projects</h3>
+      <button mat-icon-button (click)="showAddProject.set(!showAddProject())" title="Add Project">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    @if (showAddProject()) {
+      <div class="add-project-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Name</mat-label>
+          <input matInput [ngModel]="newProjectName()" (ngModelChange)="newProjectName.set($event)">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea matInput [ngModel]="newProjectDesc()" (ngModelChange)="newProjectDesc.set($event)" rows="2"></textarea>
+        </mat-form-field>
+        <div class="form-actions">
+          <button mat-button (click)="showAddProject.set(false)">Cancel</button>
+          <button mat-raised-button color="primary" (click)="addProject()" [disabled]="!newProjectName()">Create</button>
+        </div>
+      </div>
+    }
+
+    <mat-nav-list>
+      @for (project of projects(); track project.id) {
+        <a mat-list-item 
+           [class.selected]="selectedProjectId() === project.id"
+           (click)="selectProject(project.id)">
+          <span matListItemTitle>{{ project.name }}</span>
+          <span matListItemLine>{{ project.description }}</span>
+        </a>
+      }
+    </mat-nav-list>
+    
+    <div class="sidebar-footer">
+      <button mat-stroked-button color="warn" (click)="logout()" class="full-width">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-content">
+    @if (selectedProject(); as project) {
+      <div class="project-header">
+        <div class="header-content">
+          <h1>{{ project.name }}</h1>
+          <p class="description">{{ project.description }}</p>
+        </div>
+        <button mat-stroked-button color="warn" (click)="deleteProject(project.id)">
+          <mat-icon>delete</mat-icon>
+          Delete Project
+        </button>
+      </div>
+
+      <mat-tab-group animationDuration="0ms">
+        <!-- Permissions Tab -->
+        <mat-tab label="Permissions">
+          <div class="tab-content">
+            <div class="add-permission-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Key (e.g. feature.read)</mat-label>
+                <input matInput [ngModel]="newPermissionKey()" (ngModelChange)="newPermissionKey.set($event)">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Description</mat-label>
+                <input matInput [ngModel]="newPermissionDesc()" (ngModelChange)="newPermissionDesc.set($event)">
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="addPermission(project.id)" [disabled]="!newPermissionKey()">
+                Add Permission
+              </button>
+            </div>
+
+            <table mat-table [dataSource]="project.permissions" class="mat-elevation-z1">
+              <!-- Key Column -->
+              <ng-container matColumnDef="key">
+                <th mat-header-cell *matHeaderCellDef> Key </th>
+                <td mat-cell *matCellDef="let element"> 
+                  @if (editingPermissionId() === element.id) {
+                    <input matInput [ngModel]="editPermissionKey()" (ngModelChange)="editPermissionKey.set($event)">
+                  } @else {
+                    {{element.key}} 
+                  }
+                </td>
+              </ng-container>
+
+              <!-- Description Column -->
+              <ng-container matColumnDef="description">
+                <th mat-header-cell *matHeaderCellDef> Description </th>
+                <td mat-cell *matCellDef="let element"> 
+                  @if (editingPermissionId() === element.id) {
+                    <input matInput [ngModel]="editPermissionDesc()" (ngModelChange)="editPermissionDesc.set($event)">
+                  } @else {
+                    {{element.description}} 
+                  }
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let element">
+                  @if (editingPermissionId() === element.id) {
+                    <button mat-icon-button color="primary" (click)="saveEdit(element.id)">
+                      <mat-icon>save</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="cancelEdit()">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  } @else {
+                    <button mat-icon-button (click)="startEdit(element)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deletePermission(element.id)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  }
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="['key', 'description', 'actions']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['key', 'description', 'actions'];"></tr>
+            </table>
+          </div>
+        </mat-tab>
+
+        <!-- Groups Tab -->
+        <mat-tab label="Group Assignments">
+          <div class="tab-content">
+            <div class="add-group-form">
+              <mat-form-field appearance="outline">
+                <mat-label>New Group Name</mat-label>
+                <input matInput [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)">
+              </mat-form-field>
+              <button mat-raised-button color="primary" (click)="addGroup(project.id)" [disabled]="!newGroupName()">
+                Add Group
+              </button>
+            </div>
+
+            <div class="matrix-container">
+              <table class="matrix-table">
+                <thead>
+                  <tr>
+                    <th>Permission</th>
+                    @for (group of project.permissionGroups; track group.id) {
+                      <th>
+                        <div class="group-header">
+                          {{ group.name }}
+                          <button mat-icon-button color="warn" (click)="deleteGroup(group.id)" class="small-icon-button">
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </div>
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (perm of project.permissions; track perm.id) {
+                    <tr>
+                      <td>{{ perm.key }}</td>
+                      @for (group of project.permissionGroups; track group.id) {
+                        <td>
+                          <mat-checkbox 
+                            [checked]="isPermissionEnabled(group, perm.id)"
+                            (change)="toggleGroupPermission(group.id, perm.id, $event)">
+                          </mat-checkbox>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    } @else {
+      <div class="empty-state">
+        <mat-icon>arrow_back</mat-icon>
+        <h2>Select a project to manage permissions</h2>
+      </div>
+    }
+  </mat-sidenav-content>
+</mat-sidenav-container>
