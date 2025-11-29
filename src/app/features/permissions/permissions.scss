@@ -20,21 +20,33 @@
   }
 
   .mat-mdc-list-item {
-    color: #cbd5e1;
     margin: 0.25rem 0.5rem;
     border-radius: 0.5rem;
     transition: all 0.2s;
 
+    // Default state (Unselected) - Force light colors for dark sidebar
+    .mat-mdc-list-item-title {
+      color: #f1f5f9 !important; /* Slate 100 */
+    }
+    
+    .mat-mdc-list-item-line {
+      color: #94a3b8 !important; /* Slate 400 */
+    }
+
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
-      color: white;
+      
+      .mat-mdc-list-item-title,
+      .mat-mdc-list-item-line {
+        color: white !important;
+      }
     }
 
     &.selected {
       background-color: var(--primary-color);
-      color: white;
       
-      .mat-list-item-content {
+      .mat-mdc-list-item-title,
+      .mat-mdc-list-item-line {
         color: white !important;
       }
     }
