@@ -6,6 +6,8 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { join } from 'node:path';
 import { authRoutes } from './server/routes/auth';
 import { permissionRoutes } from './server/routes/permissions';
+import { projectRoutes } from './server/routes/projects';
+import { groupRoutes } from './server/routes/groups';
 import { getCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
@@ -42,6 +44,8 @@ app.use('/api/*', async (c, next) => {
 
 // API Routes
 app.route('/api/auth', authRoutes);
+app.route('/api', projectRoutes);
+app.route('/api', groupRoutes);
 app.route('/api', permissionRoutes);
 
 // Serve static files
