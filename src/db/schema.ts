@@ -5,6 +5,7 @@ export const projects = pgTable('projects', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
+  apiKey: text('api_key').notNull().unique(),
 });
 
 export const permissions = pgTable('permissions', {

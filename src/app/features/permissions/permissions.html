@@ -49,6 +49,13 @@
         <div class="header-content">
           <h1>{{ project.name }}</h1>
           <p class="description">{{ project.description }}</p>
+          <div class="api-key-display">
+            <span class="label">Project ID:</span>
+            <code>{{ project.apiKey }}</code>
+            <button mat-icon-button (click)="copyToClipboard(project.apiKey)" title="Copy ID">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
         </div>
         <button mat-stroked-button color="warn" (click)="deleteProject(project.id)">
           <mat-icon>delete</mat-icon>

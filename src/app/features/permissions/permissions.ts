@@ -15,6 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-permissions',
@@ -32,7 +33,8 @@ import { MatCardModule } from '@angular/material/card';
     MatFormFieldModule,
     MatCheckboxModule,
     MatTableModule,
-    MatCardModule
+    MatCardModule,
+    MatSnackBarModule
   ],
   templateUrl: './permissions.html',
   styleUrl: './permissions.scss'
@@ -41,6 +43,7 @@ export class PermissionsComponent {
   private permissionsService = inject(PermissionsService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
   protected projects = this.permissionsService.projects;
 
   protected selectedProjectId = signal<number | null>(null);
@@ -167,5 +170,15 @@ export class PermissionsComponent {
 
   isPermissionEnabled(group: any, permissionId: number): boolean {
     return group.groupPermissions.find((gp: any) => gp.permissionId === permissionId)?.enabled ?? false;
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.snackBar.open('Copied to clipboard!', 'Close', {
+        duration: 2000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom'
+      });
+    });
   }
 }

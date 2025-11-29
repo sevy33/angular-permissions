@@ -26,6 +26,7 @@ export interface Project {
   id: number;
   name: string;
   description: string;
+  apiKey: string;
   permissions: Permission[];
   permissionGroups: PermissionGroup[];
 }

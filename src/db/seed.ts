@@ -1,6 +1,7 @@
 import { db } from './index';
 import { projects, permissions, permissionGroups, groupPermissions, users } from './schema';
 import { eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 
 async function seed() {
   console.log('Seeding database...');
@@ -9,6 +10,7 @@ async function seed() {
   const [project] = await db.insert(projects).values({
     name: 'Operations Site',
     description: 'Main operations dashboard',
+    apiKey: randomUUID(),
   }).returning();
 
   console.log('Created Project:', project.name);

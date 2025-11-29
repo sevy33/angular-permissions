@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { db } from '../../db';
 import { projects, permissions, permissionGroups, groupPermissions } from '../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 
 export const permissionRoutes = new Hono();
 
@@ -31,7 +32,8 @@ permissionRoutes.post('/projects', async (c) => {
 
   const [newProject] = await db.insert(projects).values({
     name,
-    description
+    description,
+    apiKey: randomUUID()
   }).returning();
 
   return c.json(newProject);
