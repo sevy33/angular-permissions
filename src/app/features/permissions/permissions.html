@@ -58,7 +58,11 @@
 
       <mat-tab-group animationDuration="0ms">
         <!-- Permissions Tab -->
-        <mat-tab label="Permissions">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">vpn_key</mat-icon>
+            Permissions
+          </ng-template>
           <div class="tab-content">
             <div class="add-permission-form">
               <mat-form-field appearance="outline">
@@ -128,7 +132,11 @@
         </mat-tab>
 
         <!-- Groups Tab -->
-        <mat-tab label="Group Assignments">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">group</mat-icon>
+            Group Assignments
+          </ng-template>
           <div class="tab-content">
             <div class="add-group-form">
               <mat-form-field appearance="outline">

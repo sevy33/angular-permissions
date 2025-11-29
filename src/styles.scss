@@ -1,1 +1,58 @@
 /* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root {
+  --primary-color: #6366f1; /* Indigo 500 */
+  --primary-dark: #4338ca; /* Indigo 700 */
+  --secondary-color: #ec4899; /* Pink 500 */
+  --background-color: #f8fafc; /* Slate 50 */
+  --surface-color: #ffffff;
+  --text-primary: #1e293b; /* Slate 800 */
+  --text-secondary: #64748b; /* Slate 500 */
+  --border-color: #e2e8f0; /* Slate 200 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+}
+
+/* Overriding Material styles for a more modern look */
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: var(--primary-color);
+  --mdc-protected-button-label-text-color: white;
+}
+
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--primary-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
