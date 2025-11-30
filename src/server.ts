@@ -8,6 +8,7 @@ import { authRoutes } from './server/routes/auth';
 import { permissionRoutes } from './server/routes/permissions';
 import { projectRoutes } from './server/routes/projects';
 import { groupRoutes } from './server/routes/groups';
+import { exportRoutes } from './server/routes/export';
 import { getCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
@@ -47,6 +48,7 @@ app.route('/api/auth', authRoutes);
 app.route('/api', projectRoutes);
 app.route('/api', groupRoutes);
 app.route('/api', permissionRoutes);
+app.route('/api/export', exportRoutes);
 
 // Serve static files
 app.get('*', serveStatic({
