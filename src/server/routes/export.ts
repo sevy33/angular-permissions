@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { db } from '../../db';
-import { projects, groupPermissions } from '../../db/schema';
+import { projects, permissions, groupPermissions } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export const exportRoutes = new Hono();
@@ -15,6 +15,13 @@ exportRoutes.get('/all', async (c) => {
       apiKey: true
     },
     with: {
+      permissions: {
+        columns: {
+          id: true,
+          key: true,
+          description: true
+        }
+      },
       permissionGroups: {
         columns: {
           id: true,
@@ -22,17 +29,9 @@ exportRoutes.get('/all', async (c) => {
         },
         with: {
           groupPermissions: {
-            where: eq(groupPermissions.enabled, true),
             columns: {
+              permissionId: true,
               enabled: true
-            },
-            with: {
-              permission: {
-                columns: {
-                  key: true,
-                  description: true
-                }
-              }
             }
           }
         }
@@ -40,29 +39,28 @@ exportRoutes.get('/all', async (c) => {
     }
   });
   
-  // Transform the result to be cleaner if needed, or return as is.
-  // The structure will be:
-  // [
-  //   {
-  //     ...project,
-  //     permissionGroups: [
-  //       {
-  //         ...group,
-  //         groupPermissions: [
-  //           { enabled: true, permission: { key: '...', description: '...' } }
-  //         ]
-  //       }
-  //     ]
-  //   }
-  // ]
-  
-  // Let's flatten the permissions array for easier consumption
   const transformed = result.map(project => ({
-    ...project,
-    permissionGroups: project.permissionGroups.map(group => ({
-      ...group,
-      permissions: group.groupPermissions.map(gp => gp.permission)
-    }))
+    id: project.id,
+    name: project.name,
+    description: project.description,
+    apiKey: project.apiKey,
+    permissionGroups: project.permissionGroups.map(group => {
+      // Map all project permissions to this group
+      const permissions = project.permissions.map(perm => {
+        const gp = group.groupPermissions.find(p => p.permissionId === perm.id);
+        return {
+          key: perm.key,
+          description: perm.description,
+          enabled: gp ? gp.enabled : false
+        };
+      });
+
+      return {
+        id: group.id,
+        name: group.name,
+        permissions
+      };
+    })
   }));
 
   return c.json(transformed);
@@ -81,6 +79,13 @@ exportRoutes.get('/project/:apiKey', async (c) => {
       apiKey: true
     },
     with: {
+      permissions: {
+        columns: {
+          id: true,
+          key: true,
+          description: true
+        }
+      },
       permissionGroups: {
         columns: {
           id: true,
@@ -88,17 +93,9 @@ exportRoutes.get('/project/:apiKey', async (c) => {
         },
         with: {
           groupPermissions: {
-            where: eq(groupPermissions.enabled, true),
             columns: {
+              permissionId: true,
               enabled: true
-            },
-            with: {
-              permission: {
-                columns: {
-                  key: true,
-                  description: true
-                }
-              }
             }
           }
         }
@@ -111,11 +108,26 @@ exportRoutes.get('/project/:apiKey', async (c) => {
   }
 
   const transformed = {
-    ...project,
-    permissionGroups: project.permissionGroups.map(group => ({
-      ...group,
-      permissions: group.groupPermissions.map(gp => gp.permission)
-    }))
+    id: project.id,
+    name: project.name,
+    description: project.description,
+    apiKey: project.apiKey,
+    permissionGroups: project.permissionGroups.map(group => {
+      const permissions = project.permissions.map(perm => {
+        const gp = group.groupPermissions.find(p => p.permissionId === perm.id);
+        return {
+          key: perm.key,
+          description: perm.description,
+          enabled: gp ? gp.enabled : false
+        };
+      });
+
+      return {
+        id: group.id,
+        name: group.name,
+        permissions
+      };
+    })
   };
 
   return c.json(transformed);
