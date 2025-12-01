@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { db } from '../../db';
-import { projects, permissions, groupPermissions } from '../../db/schema';
+import { projects, permissions, groupPermissions, permissionGroups } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export const exportRoutes = new Hono();
@@ -131,4 +131,60 @@ exportRoutes.get('/project/:apiKey', async (c) => {
   };
 
   return c.json(transformed);
+});
+
+// Get permissions for a specific group in a project
+exportRoutes.get('/project/:apiKey/group/:groupName', async (c) => {
+  const apiKey = c.req.param('apiKey');
+  const groupName = c.req.param('groupName');
+
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.apiKey, apiKey),
+    columns: {
+      id: true
+    },
+    with: {
+      permissions: {
+        columns: {
+          id: true,
+          key: true
+        }
+      },
+      permissionGroups: {
+        where: eq(permissionGroups.name, groupName),
+        columns: {
+          id: true,
+          name: true
+        },
+        with: {
+          groupPermissions: {
+            columns: {
+              permissionId: true,
+              enabled: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!project) {
+    return c.json({ error: 'Project not found' }, 404);
+  }
+
+  const group = project.permissionGroups[0];
+
+  if (!group) {
+    return c.json({ error: 'Group not found' }, 404);
+  }
+
+  const result = project.permissions.map(perm => {
+    const gp = group.groupPermissions.find(p => p.permissionId === perm.id);
+    return {
+      key: perm.key,
+      enabled: gp ? gp.enabled : false
+    };
+  });
+
+  return c.json(result);
 });
