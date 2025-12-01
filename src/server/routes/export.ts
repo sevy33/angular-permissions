@@ -178,13 +178,11 @@ exportRoutes.get('/project/:apiKey/group/:groupName', async (c) => {
     return c.json({ error: 'Group not found' }, 404);
   }
 
-  const result = project.permissions.map(perm => {
+  const result = project.permissions.reduce((acc, perm) => {
     const gp = group.groupPermissions.find(p => p.permissionId === perm.id);
-    return {
-      key: perm.key,
-      enabled: gp ? gp.enabled : false
-    };
-  });
+    acc[perm.key] = gp ? gp.enabled : false;
+    return acc;
+  }, {} as Record<string, boolean>);
 
   return c.json(result);
 });
