@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, afterNextRender } from '@angular/core';
+import { Component, inject, signal, computed, afterNextRender, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -46,7 +46,14 @@ export class PermissionsComponent {
   private snackBar = inject(MatSnackBar);
   protected projects = this.permissionsService.projects;
 
-  protected selectedProjectId = signal<number | null>(null);
+  // Route param input
+  projectId = input<string>();
+
+  protected selectedProjectId = computed(() => {
+    const id = this.projectId();
+    return id ? Number(id) : null;
+  });
+  
   protected selectedProject = computed(() => 
     this.projects().find(p => p.id === this.selectedProjectId())
   );
@@ -79,7 +86,7 @@ export class PermissionsComponent {
   }
 
   selectProject(id: number) {
-    this.selectedProjectId.set(id);
+    this.router.navigate(['/project', id]);
     // Reset other states
     this.newPermissionKey.set('');
     this.newPermissionDesc.set('');
@@ -108,7 +115,7 @@ export class PermissionsComponent {
     if (confirm('Are you sure you want to delete this project? This will delete all associated permissions and groups.')) {
       this.permissionsService.deleteProject(id).subscribe(() => {
         if (this.selectedProjectId() === id) {
-          this.selectedProjectId.set(null);
+          this.router.navigate(['/']);
         }
       });
     }
