@@ -36,6 +36,10 @@
     </mat-nav-list>
     
     <div class="sidebar-footer">
+      <button mat-stroked-button (click)="exportToExcel()" class="full-width" style="margin-bottom: 0.5rem;">
+        <mat-icon>download</mat-icon>
+        Export Data
+      </button>
       <button mat-stroked-button color="warn" (click)="logout()" class="full-width">
         <mat-icon>logout</mat-icon>
         Logout

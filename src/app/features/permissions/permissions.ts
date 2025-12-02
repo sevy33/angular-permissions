@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, afterNextRender, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { PermissionsService, Project, Permission } from '../../core/permissions';
 import { AuthService } from '../../core/auth';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -23,6 +23,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     MatSidenavModule,
     MatListModule,
     MatTabsModule,
@@ -187,5 +188,65 @@ export class PermissionsComponent {
         verticalPosition: 'bottom'
       });
     });
+  }
+
+  async exportToExcel() {
+    const projects = this.projects();
+    const data: any[] = [];
+
+    projects.forEach(project => {
+      // If project has no permissions, add a row with just project info
+      if (!project.permissions || project.permissions.length === 0) {
+        data.push({
+          'Project Name': project.name,
+          'Project Description': project.description,
+          'Permission Key': '',
+          'Permission Description': '',
+          'Group Name': '',
+          'Enabled': ''
+        });
+        return;
+      }
+
+      project.permissions.forEach(perm => {
+        // Check if this permission is assigned to any group
+        let assignedToGroup = false;
+
+        if (project.permissionGroups && project.permissionGroups.length > 0) {
+          project.permissionGroups.forEach(group => {
+            const groupPerm = group.groupPermissions.find(gp => gp.permissionId === perm.id);
+            if (groupPerm) {
+              assignedToGroup = true;
+              data.push({
+                'Project Name': project.name,
+                'Project Description': project.description,
+                'Permission Key': perm.key,
+                'Permission Description': perm.description,
+                'Group Name': group.name,
+                'Enabled': groupPerm.enabled ? 'Yes' : 'No'
+              });
+            }
+          });
+        }
+
+        // If permission is not assigned to any group, add it with empty group info
+        if (!assignedToGroup) {
+          data.push({
+            'Project Name': project.name,
+            'Project Description': project.description,
+            'Permission Key': perm.key,
+            'Permission Description': perm.description,
+            'Group Name': '',
+            'Enabled': ''
+          });
+        }
+      });
+    });
+
+    const XLSX = await import('xlsx');
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Permissions');
+    XLSX.writeFile(wb, 'permissions_export.xlsx');
   }
 }
