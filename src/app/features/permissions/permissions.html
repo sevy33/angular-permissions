@@ -36,11 +36,11 @@
     </mat-nav-list>
     
     <div class="sidebar-footer">
-      <button mat-stroked-button (click)="exportToExcel()" class="full-width" style="margin-bottom: 0.5rem;">
+            <button mat-button (click)="exportToExcel()">
         <mat-icon>download</mat-icon>
         Export Data
       </button>
-      <button mat-stroked-button color="warn" (click)="logout()" class="full-width">
+      <button mat-button (click)="logout()">
         <mat-icon>logout</mat-icon>
         Logout
       </button>
@@ -61,10 +61,16 @@
             </button>
           </div>
         </div>
-        <button mat-stroked-button color="warn" (click)="deleteProject(project.id)">
-          <mat-icon>delete</mat-icon>
-          Delete Project
-        </button>
+        <div class="header-actions">
+          <button mat-stroked-button color="warn" (click)="deleteProject(project.id)">
+            <mat-icon>delete</mat-icon>
+            Delete Project
+          </button>
+          <button mat-stroked-button color="primary" (click)="openBulkUploadDialog(project.id)">
+            <mat-icon>upload</mat-icon>
+            Bulk Upload
+          </button>
+        </div>
       </div>
 
       <mat-tab-group animationDuration="0ms">

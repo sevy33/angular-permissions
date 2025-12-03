@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>Bulk Upload Permissions</h2>
+<mat-dialog-content>
+  <div class="bulk-upload-container">
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="downloadTemplate()">
+        <mat-icon>download</mat-icon>
+        Download Template
+      </button>
+    </div>
+
+    <div class="upload-area">
+      <input type="file" (change)="onFileChange($event)" accept=".xlsx, .xls" #fileInput style="display: none;">
+      <button mat-raised-button color="primary" (click)="fileInput.click()">
+        <mat-icon>upload_file</mat-icon>
+        Select Excel File
+      </button>
+      <span *ngIf="selectedFile()">{{ selectedFile()?.name }}</span>
+    </div>
+
+    <div *ngIf="previewData().length > 0" class="preview-table">
+      <h3>Preview</h3>
+      <table mat-table [dataSource]="previewData()" class="mat-elevation-z8">
+        <ng-container matColumnDef="key">
+          <th mat-header-cell *matHeaderCellDef> Permission Key </th>
+          <td mat-cell *matCellDef="let element"> {{element.key}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef> Description </th>
+          <td mat-cell *matCellDef="let element"> {{element.description}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="group">
+          <th mat-header-cell *matHeaderCellDef> Group </th>
+          <td mat-cell *matCellDef="let element"> {{element.group}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="!previewData().length || isUploading()" (click)="upload()">
+    <mat-icon *ngIf="isUploading()">hourglass_empty</mat-icon>
+    Upload
+  </button>
+</mat-dialog-actions>

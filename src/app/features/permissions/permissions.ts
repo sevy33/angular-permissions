@@ -16,6 +16,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { BulkUploadComponent } from '../bulk-upload/bulk-upload';
 
 @Component({
   selector: 'app-permissions',
@@ -35,7 +37,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatCheckboxModule,
     MatTableModule,
     MatCardModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   templateUrl: './permissions.html',
   styleUrl: './permissions.scss'
@@ -45,6 +48,7 @@ export class PermissionsComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   protected projects = this.permissionsService.projects;
 
   // Route param input
@@ -120,6 +124,19 @@ export class PermissionsComponent {
         }
       });
     }
+  }
+
+  openBulkUploadDialog(projectId: number) {
+    const dialogRef = this.dialog.open(BulkUploadComponent, {
+      width: '800px',
+      data: { projectId }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.permissionsService.loadProjects().subscribe();
+      }
+    });
   }
 
   addPermission(projectId: number) {

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { db } from '../../db';
 import { projects, permissions, permissionGroups, groupPermissions } from '../../db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
 export const projectRoutes = new Hono();
@@ -19,6 +19,77 @@ projectRoutes.get('/projects', async (c) => {
     }
   });
   return c.json(result);
+});
+
+// Bulk import permissions and groups
+projectRoutes.post('/projects/:id/bulk-import', async (c) => {
+  const projectId = Number(c.req.param('id'));
+  const body = await c.req.json();
+  const { items } = body as { items: { key: string; description: string; group?: string }[] };
+
+  if (!items || !Array.isArray(items)) {
+    return c.json({ error: 'Invalid payload' }, 400);
+  }
+
+  const results = {
+    permissionsCreated: 0,
+    groupsCreated: 0,
+    assignmentsCreated: 0,
+    errors: [] as string[]
+  };
+
+  for (const item of items) {
+    try {
+      // 1. Create or Get Permission
+      let permissionId: number;
+      const existingPerm = await db.select().from(permissions).where(and(
+        eq(permissions.projectId, projectId),
+        eq(permissions.key, item.key)
+      )).limit(1);
+
+      if (existingPerm.length > 0) {
+        permissionId = existingPerm[0].id;
+      } else {
+        const [newPerm] = await db.insert(permissions).values({
+          projectId,
+          key: item.key,
+          description: item.description
+        }).returning();
+        permissionId = newPerm.id;
+        results.permissionsCreated++;
+      }
+
+      // 2. Handle Group if present
+      if (item.group) {
+        let groupId: number;
+        const existingGroup = await db.select().from(permissionGroups).where(and(
+          eq(permissionGroups.projectId, projectId),
+          eq(permissionGroups.name, item.group)
+        )).limit(1);
+
+        if (existingGroup.length > 0) {
+          groupId = existingGroup[0].id;
+        } else {
+          const [newGroup] = await db.insert(permissionGroups).values({
+            projectId,
+            name: item.group
+          }).returning();
+          groupId = newGroup.id;
+          results.groupsCreated++;
+        }
+
+        // 3. Assign Permission to Group
+        await db.insert(groupPermissions)
+          .values({ groupId, permissionId, enabled: true })
+          .onConflictDoNothing();
+        results.assignmentsCreated++;
+      }
+    } catch (e: any) {
+      results.errors.push(`Failed to process ${item.key}: ${e.message}`);
+    }
+  }
+
+  return c.json(results);
 });
 
 // Create a new project

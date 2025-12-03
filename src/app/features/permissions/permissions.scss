@@ -108,15 +108,27 @@
   padding: 1rem;
   background-color: rgba(0, 0, 0, 0.2);
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   
-  .full-width {
+  button, a {
     width: 100%;
-    border-color: #475569;
     color: #cbd5e1;
+    justify-content: flex-start;
+    
+    mat-icon {
+      margin-right: 12px;
+      color: #94a3b8;
+    }
     
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
       color: white;
+      
+      mat-icon {
+        color: white;
+      }
     }
   }
 }
@@ -201,6 +213,12 @@
         }
       }
     }
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 
