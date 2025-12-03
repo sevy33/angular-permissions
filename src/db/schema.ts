@@ -1,4 +1,4 @@
-import { pgTable, serial, text, boolean, primaryKey, integer } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, boolean, primaryKey, integer, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const projects = pgTable('projects', {
@@ -13,13 +13,17 @@ export const permissions = pgTable('permissions', {
   projectId: integer('project_id').references(() => projects.id).notNull(),
   key: text('key').notNull(), // e.g. feature.permission
   description: text('description'),
-});
+}, (t) => ({
+  uniqueKeyPerProject: unique().on(t.projectId, t.key),
+}));
 
 export const permissionGroups = pgTable('permission_groups', {
   id: serial('id').primaryKey(),
   projectId: integer('project_id').references(() => projects.id).notNull(),
   name: text('name').notNull(),
-});
+}, (t) => ({
+  uniqueNamePerProject: unique().on(t.projectId, t.name),
+}));
 
 export const groupPermissions = pgTable('group_permissions', {
   groupId: integer('group_id').references(() => permissionGroups.id).notNull(),

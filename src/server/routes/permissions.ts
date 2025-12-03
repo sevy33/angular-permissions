@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { db } from '../../db';
 import { permissions, groupPermissions } from '../../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 export const permissionRoutes = new Hono();
 
@@ -12,6 +12,19 @@ permissionRoutes.post('/permissions', async (c) => {
 
   if (!projectId || !key) {
     return c.json({ error: 'Project ID and Key are required' }, 400);
+  }
+
+  // Check for duplicate
+  const existing = await db.select()
+    .from(permissions)
+    .where(and(
+      eq(permissions.projectId, projectId),
+      eq(permissions.key, key)
+    ))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return c.json({ error: 'Permission key already exists in this project' }, 409);
   }
 
   const [newPermission] = await db.insert(permissions).values({

@@ -126,9 +126,14 @@ export class PermissionsComponent {
     if (!this.newPermissionKey()) return;
     
     this.permissionsService.addPermission(projectId, this.newPermissionKey(), this.newPermissionDesc())
-      .subscribe(() => {
-        this.newPermissionKey.set('');
-        this.newPermissionDesc.set('');
+      .subscribe({
+        next: () => {
+          this.newPermissionKey.set('');
+          this.newPermissionDesc.set('');
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.error || 'Failed to add permission', 'Close', { duration: 3000 });
+        }
       });
   }
 
@@ -136,8 +141,13 @@ export class PermissionsComponent {
     if (!this.newGroupName()) return;
 
     this.permissionsService.addPermissionGroup(projectId, this.newGroupName())
-      .subscribe(() => {
-        this.newGroupName.set('');
+      .subscribe({
+        next: () => {
+          this.newGroupName.set('');
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.error || 'Failed to add group', 'Close', { duration: 3000 });
+        }
       });
   }
 
